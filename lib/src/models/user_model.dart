@@ -11,5 +11,5 @@ class User {
       this.phoneNum,
       this.email,
       this.imageUrl,
-      this.token);
+      [this.token]);
 }

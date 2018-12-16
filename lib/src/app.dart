@@ -7,7 +7,8 @@ import '../src/scopped_models/main.dart';
 class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    MainModel mainModel =MainModel(); 
+    MainModel mainModel = MainModel();
+
     return ScopedModel<MainModel>(
       model: mainModel,
       child: MaterialApp(
@@ -28,7 +29,7 @@ class App extends StatelessWidget {
           ),
         ),
         routes: {
-          '/user': (BuildContext context) => ProfileScreen(mainModel.user),
+          '/user': (BuildContext context) => ProfileScreen(mainModel),
         },
       ),
     );

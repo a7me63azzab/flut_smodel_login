@@ -134,7 +134,7 @@ class _AuthScreenState extends State<AuthScreen> {
         _fromData['password'] = value;
       },
       validator: (String value) {
-        if (value.isEmpty || value.length < 4) {
+        if (value.isEmpty || value.length < 6) {
           return 'Password not valid';
         }
       },
@@ -226,7 +226,8 @@ class _AuthScreenState extends State<AuthScreen> {
     // send data to scopped model
     model
         .register(_fromData)
-        .then((value) => Navigator.pushReplacementNamed(context, '/user'));
+        .then((value) => Navigator.pushNamed(context, '/user'))
+        .catchError((err) => print(err));
   }
 
   @override
