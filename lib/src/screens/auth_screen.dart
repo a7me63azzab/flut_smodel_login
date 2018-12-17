@@ -248,6 +248,34 @@ class _AuthScreenState extends State<AuthScreen> {
                   onPressed: () => submitButton(model),
                   child: LoginButton(model.loading),
                 ),
+              ),
+              Positioned(
+                top: 440,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      'Already have an account ?',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                    FlatButton(
+                      onPressed: ()  {
+                        print('Clicked');
+                        Navigator.of(context).pushNamed('/login');
+                      },
+                      child: Text(
+                        'Login',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    )
+                  ],
+                ),
               )
             ],
           ),
@@ -256,11 +284,3 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 }
-
-/*
- GestureDetector(
-                  onTap: () => submitButton(model),
-                  child: LoginButton(),
-                )
-
- */

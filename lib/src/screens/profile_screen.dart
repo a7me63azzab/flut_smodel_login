@@ -23,6 +23,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   TextEditingController _updatePasswordController = TextEditingController();
   @override
   void initState() {
+    print('------------------> ${widget.model.user.userName}');
+    print('------------------> ${widget.model.user.fullName}');
     if (widget.model.user == null) {
       widget.model.getCurrentUserData();
     }
@@ -102,8 +104,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         });
   }
 
-  updateFullName(BuildContext context) {
-    _fullNameController.text = widget.model.user.fullName;
+  updateFullName(BuildContext context, MainModel model) {
+    _fullNameController.text = model.user.fullName;
     showDialog(
         context: context,
         builder: (context) {
@@ -119,7 +121,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               FlatButton(
                 child: Text('Update'),
-                onPressed: () => widget.model
+                onPressed: () => model
                     .updateUserData({'name': _fullNameController.text}).then(
                         (value) => Navigator.of(context).pop()),
               )
@@ -128,8 +130,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         });
   }
 
-  updateUserName(BuildContext context) {
-    _userNameController.text = widget.model.user.userName;
+  updateUserName(BuildContext context, MainModel model) {
+    _userNameController.text = model.user.userName;
     showDialog(
         context: context,
         builder: (context) {
@@ -145,7 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               FlatButton(
                 child: Text('Update'),
-                onPressed: () => widget.model.updateUserData({
+                onPressed: () => model.updateUserData({
                       'userName': _userNameController.text
                     }).then((value) => Navigator.of(context).pop()),
               )
@@ -154,16 +156,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         });
   }
 
-  Widget itemField(BuildContext context, String fieldName, String filedValue) {
+  Widget itemField(BuildContext context, String fieldName, String fieldValue,
+      MainModel model) {
     Widget editField;
     if (fieldName == 'User Name') {
       editField = IconButton(
-        onPressed: () => updateUserName(context),
+        onPressed: () => updateUserName(context, model),
         icon: Icon(Icons.edit),
       );
     } else if (fieldName == 'Full Name') {
       editField = IconButton(
-        onPressed: () => updateFullName(context),
+        onPressed: () => updateFullName(context, model),
         icon: Icon(Icons.edit),
       );
     } else {
@@ -195,11 +198,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(
-            width: 50,
-          ),
+          fieldName == 'Email'
+              ? SizedBox(
+                  width: 20,
+                )
+              : SizedBox(
+                  width: 50,
+                ),
           Text(
-            widget.model.user != null ? filedValue : '',
+            model.user != null ? fieldValue : '',
             style: TextStyle(
               fontWeight: FontWeight.bold,
             ),
@@ -360,85 +367,102 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (_imageFile != null) {
       userImage = _imageFile;
-    } else if (widget.model.user != null) {
+    } else if (widget.model.user.imageUrl != null) {
       userImage = widget.model.user.imageUrl;
     } else {
       userImage = "https://i.imgur.com/BoN9kdC.png";
     }
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 249, 241, 241),
-      body: ListView(
-        children: <Widget>[
-          Stack(
-            overflow: Overflow.visible,
-            alignment: AlignmentDirectional.center,
+      body: ScopedModelDescendant<MainModel>(
+        builder: (BuildContext context, Widget child, MainModel model) {
+          return ListView(
             children: <Widget>[
-              Container(
-                decoration: BoxDecoration(boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 10,
-                    offset: Offset(0, 10),
+              Stack(
+                overflow: Overflow.visible,
+                alignment: AlignmentDirectional.center,
+                children: <Widget>[
+                  Container(
+                    decoration: BoxDecoration(boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 10,
+                        offset: Offset(0, 10),
+                      ),
+                    ]),
+                    width: MediaQuery.of(context).size.width,
+                    child: Image.asset(
+                      'assets/images/cover2.jpeg',
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                ]),
-                width: MediaQuery.of(context).size.width,
-                child: Image.asset(
-                  'assets/images/cover2.jpeg',
-                  fit: BoxFit.cover,
-                ),
+                  Positioned(
+                    top: 90,
+                    child: Container(
+                      width: 100.0,
+                      height: 100.0,
+                      decoration: new BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          style: BorderStyle.solid,
+                          color: Colors.white,
+                          width: 4,
+                        ),
+                        image: new DecorationImage(
+                          fit: BoxFit.fill,
+                          image: (userImage is File)
+                              ? FileImage(userImage)
+                              : NetworkImage(userImage),
+                        ),
+                      ),
+                      child: Container(
+                        margin: EdgeInsets.only(top: 60),
+                        child: IconButton(
+                          onPressed: () => imagePicker(context),
+                          icon: Icon(Icons.camera_alt),
+                          color: Colors.white.withOpacity(0.5),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              Positioned(
-                top: 90,
-                child: Container(
-                  width: 100.0,
-                  height: 100.0,
-                  decoration: new BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      style: BorderStyle.solid,
-                      color: Colors.white,
-                      width: 4,
-                    ),
-                    image: new DecorationImage(
-                      fit: BoxFit.fill,
-                      image: (userImage is File)
-                          ? FileImage(userImage)
-                          : NetworkImage(userImage),
-                    ),
-                  ),
-                  child: Container(
-                    margin: EdgeInsets.only(top: 60),
-                    child: IconButton(
-                      onPressed: () => imagePicker(context),
-                      icon: Icon(Icons.camera_alt),
-                      color: Colors.white.withOpacity(0.5),
-                    ),
-                  ),
-                ),
+              SizedBox(
+                height: 30,
               ),
+              itemField(
+                  context,
+                  'User Name',
+                  model.user.userName != null ? model.user.userName : '',
+                  model),
+              SizedBox(
+                height: 20,
+              ),
+              itemField(
+                  context,
+                  'Full Name',
+                  model.user.fullName != null ? model.user.fullName : '',
+                  model),
+              SizedBox(
+                height: 20,
+              ),
+              itemField(context, 'Email',
+                  model.user.email != null ? model.user.email : '', model),
+              SizedBox(
+                height: 20,
+              ),
+              itemField(
+                  context,
+                  'Phone Num',
+                  model.user.phoneNum != null ? model.user.phoneNum : '',
+                  model),
+              SizedBox(
+                height: 20,
+              ),
+              updatePassword(),
             ],
-          ),
-          SizedBox(
-            height: 30,
-          ),
-          itemField(context, 'User Name', widget.model.user.userName),
-          SizedBox(
-            height: 20,
-          ),
-          itemField(context, 'Full Name', widget.model.user.fullName),
-          SizedBox(
-            height: 20,
-          ),
-          itemField(context, 'Email', widget.model.user.email),
-          SizedBox(
-            height: 20,
-          ),
-          itemField(context, 'Phone Num', widget.model.user.phoneNum),
-          SizedBox(
-            height: 20,
-          ),
-          updatePassword(),
-        ],
+          );
+        },
       ),
     );
   }

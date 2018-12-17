@@ -19,6 +19,8 @@ mixin AuthModel on Model {
 
   bool isValid = false;
   bool isSuccess = false;
+  bool resetPasswordSuccess = false;
+
   notifyListeners();
 
   User get user {
@@ -129,12 +131,6 @@ mixin AuthModel on Model {
     }
   }
 
-  //USER LOGIN
-
-  //UPDATE PROFILE
-
-  //UPDATE USER IMAGE
-
   // get new image url
   Future<Map<String, dynamic>> updateImage(File image) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -228,6 +224,53 @@ mixin AuthModel on Model {
     }
   }
 
+  // User Login
+  Future<Map<String, dynamic>> userLogin(Map<String, dynamic> userData) async {
+    print('from scoped model $userData');
+    loading = true;
+    notifyListeners();
+    try {
+      var url = Uri.parse('$baseUrl/user/login');
+      http.Response response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(
+            {'email': userData['email'], 'password': userData['password']}),
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        print('x error x');
+        loading = false;
+        notifyListeners();
+        return null;
+      }
+
+      final responseData = jsonDecode(response.body);
+      print('User Login => $responseData');
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('token', responseData['token']);
+      prefs.setString('userEmail', responseData['email']);
+      prefs.setString('userId', responseData['userId']);
+      prefs.setString('imageUrl', responseData['imageUrl']);
+
+      _user = User(
+          responseData['userName'],
+          responseData['fullName'],
+          responseData['phoneNum'],
+          responseData['email'],
+          responseData['imageUrl'],
+          responseData['token']);
+
+      loading = false;
+      notifyListeners();
+      return responseData;
+    } catch (error) {
+      loading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
   // Check Old Password
   Future<Map<String, dynamic>> checkOldPassword(String password) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -299,6 +342,68 @@ mixin AuthModel on Model {
     } catch (error) {
       isSuccess = false;
 
+      notifyListeners();
+      return null;
+    }
+  }
+
+  ///user/forget
+  Future<Map<String, dynamic>> forgetPassword(String email) async {
+    print('from scoped model $email');
+   
+    try {
+      var url = Uri.parse('$baseUrl/user/forget');
+      http.Response response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({'email': email}),
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        print('x error x');
+        
+        return null;
+      }
+
+      final responseData = jsonDecode(response.body);
+      print('forget password => $responseData');
+
+      
+      return responseData;
+    } catch (error) {
+      
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>> resetPassword(
+      String newPassword, String resetToken) async {
+    print('from scoped model $newPassword , $resetToken');
+    loading = true;
+    notifyListeners();
+    try {
+      var url = Uri.parse('$baseUrl/user/reset/$resetToken');
+      http.Response response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({'password': newPassword}),
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        print('x error x');
+        resetPasswordSuccess = false;
+        notifyListeners();
+        return null;
+      }
+
+      final responseData = jsonDecode(response.body);
+      print('forget password => $responseData');
+
+      resetPasswordSuccess = true;
+      notifyListeners();
+      return responseData;
+    } catch (error) {
+      resetPasswordSuccess = false;
       notifyListeners();
       return null;
     }
